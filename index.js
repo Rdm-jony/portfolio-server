@@ -7,7 +7,7 @@ require('dotenv').config()
 
 app.use(express.json())
 app.use(cors({
-    origin:['https://portfolio-c81f1.web.app,http://localhost:5173']
+    origin:['https://portfolio-c81f1.web.app',"http://localhost:5173"]
 }))
 
 app.get("/", (req, res) => {
