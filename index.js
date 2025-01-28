@@ -6,7 +6,9 @@ require('dotenv').config()
 
 
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin:['https://portfolio-c81f1.web.app']
+}))
 
 app.get("/", (req, res) => {
     res.send('portfolio server running')
@@ -28,7 +30,6 @@ async function run() {
     const projectCollcetion = client.db('portfolio').collection('projectCollection')
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
         // Send a ping to confirm a successful connection
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
