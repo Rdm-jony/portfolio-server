@@ -29,6 +29,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     const projectCollcetion = client.db('portfolio').collection('projectCollection')
+    const blogCollection = client.db('portfolio').collection('blogCollection')
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // Send a ping to confirm a successful connection
@@ -73,6 +74,33 @@ async function run() {
         })
 
 
+        app.post("/blog", async (req, res) => {
+            try {
+                const newBlog = await blogCollcetion.insertOne(req.body);
+                res.status(201).json({ data: newBlog, sucess: true });
+            } catch (error) {
+                res.status(400).json({ message: "Error creating blog", error, success: false });
+            }
+        });
+        app.get("/blog/all", async (req, res) => {
+            try {
+                const blog = await blogCollection.find().toArray();
+                res.status(201).json({ data: blog, sucess: true });
+            } catch (error) {
+                res.status(400).json({ message: "Error retrieving blog", error, success: false });
+            }
+        });
+        app.get("/blog/:id", async (req, res) => {
+            try {
+                console.log(req.params.id)
+                const blog = await blogCollection.findOne({
+                    title: { $regex: `^${req.params.id}$`, $options: "i" }
+                });
+                res.status(201).json(blog);
+            } catch (error) {
+                res.status(400).json({ message: "Error retrieving blog", error, success: false });
+            }
+        });
     } finally {
 
     }
