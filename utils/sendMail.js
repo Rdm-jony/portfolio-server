@@ -1,45 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import nodemailer from "nodemailer"
-import path from "path"
-import ejs from "ejs";
-import dotenv from "dotenv"
-import { fileURLToPath } from "url";
+const nodemailer = require("nodemailer");
+const path = require("path");
+const ejs = require("ejs");
+require("dotenv").config();
 
-dotenv.config()
+const sendMail = async ({ to, subject, templateName, templateData }) => {
+  const templatePath = path.join(__dirname, "ejsTemplate", `${templateName}.ejs`);
+  const html = await ejs.renderFile(templatePath, templateData);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-const transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT),
-    secure: true,
+    port: process.env.SMTP_PORT,
+    secure: false,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
     }
-})
+  });
 
-
-
-export const sendMail = async ({
+  const info = await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to,
     subject,
-    templateName,
-    templateData
-}) => {
-    try {
-        const templatePath = path.resolve(__dirname, `../ejsTemplate/${templateName}.ejs`);
-        const html = await ejs.renderFile(templatePath, templateData)
-        const info = await transporter.sendMail({
-            from: process.env.SMTP_FROM,
-            to: process.env.SMTP_FROM,
-            subject: subject,
-            html: html
-        })
-        console.log(`\u2709\uFE0F Email sent to : ${info.messageId}`);
+    html
+  });
 
-    } catch (error) {
-        console.log(error)
-    }
-}
+  console.log(`✉️ Email sent to ${to}: ${info.messageId}`);
+};
+
+module.exports = { sendMail };
