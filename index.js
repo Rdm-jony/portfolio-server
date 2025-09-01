@@ -7,7 +7,7 @@ require('dotenv').config()
 
 app.use(express.json())
 app.use(cors({
-    origin:['https://portfolio-c81f1.web.app',"http://localhost:5173"]
+    origin: ['https://portfolio-c81f1.web.app', "http://localhost:5173"]
 }))
 
 app.get("/", (req, res) => {
@@ -16,6 +16,7 @@ app.get("/", (req, res) => {
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { sendMail } = require('./utils/sendMail');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tbsccmb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -51,26 +52,23 @@ async function run() {
 
 
         app.post('/contact', async (req, res) => {
-            const contactInfo = req.body;
-            const transporter = nodemailer.createTransport({
-                service:"gmail",
-                auth: {
-                    user: 'jonydascse@gmail.com',
-                    pass: 'ivqa zsgm acjg abje',
-                },
-            });
-            const info = await transporter.sendMail({
-                from: '"jony das" <jonydascse@gmail.com>', // Sender address
-                to: "jonydascse@gmail.com", // list of receivers
-                subject: "Portfolio Response ✔", // Subject line
-                html: `
-                <b>sender name: ${contactInfo?.name}</b><br/>
-                <b>sender email: ${contactInfo?.email}</b><br/>
-                <i>sender message: ${contactInfo?.message}</i><br/>
-                `, // html body
-            });
-            if(info.messageId){
-                res.send({success:true})
+            try {
+                const { email, name, message } = req.body
+                await sendMail({
+                    subject: "Portfolio review message",
+                    templateData: {
+                        name,
+                        email,
+                        message,
+                        submittedAt: Date.now()
+                    },
+                    templateName: "contact"
+                })
+
+                res.send({ success: true })
+
+            } catch (error) {
+                res.send({ success: false })
             }
         })
 
